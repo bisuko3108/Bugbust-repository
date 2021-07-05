@@ -47,4 +47,4 @@ Outputs:
   SNSTopicArn:
     Value: !Ref CloudWatchAlarmForSNSTopic
     Export:
-      Name: !Ref ${AWS::StackName}-SNSTopicArn
+      Name: !Sub ${AWS::StackName}-SNSTopicArn
