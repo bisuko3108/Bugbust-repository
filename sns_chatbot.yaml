@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: SNS_Chatbot_Stack
+Parameters:
+  TargetWorkspaceId:
+    Type: String
+  TargetChannelId:
+    Type: String
+Resources:
+  CloudWatchAlarmForSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: SLO_Alert_Notification_SNS
+  ChatbotForSlackNotifications:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: SLO_Alert_Notification_Chatbot
+      IamRoleArn: !GetAtt ChatbotIamRole.Arn
+      LoggingLevel: INFO
+      SlackChannelId: !Ref TargetChannelId
+      SlackWorkspaceId: !Ref TargetWorkspaceId
+      SnsTopicArns:
+        - !Ref CloudWatchAlarmForSNSTopic
+  ChatbotIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SLO_Alert_Notification_Chatbot_Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SLO_Alert_Notification_Chatbot_Policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:Describe*
+                  - cloudwatch:Get*
+                  - cloudwatch:List*
+                Resource:
+                  - "*"
+Outputs:
+  SNSTopicArn:
+    Value: !Ref CloudWatchAlarmForSNSTopic
+    Export:
+      Name: SNSTopicArn
